@@ -197,30 +197,39 @@ function fitCanvas()
 {
     let windowW = window.innerWidth;
     let windowH = window.innerHeight;
-    let targetW = windowW;
-    let targetH = windowH;
     let widthOverHeight = backBuffer.width / backBuffer.height;
-    if(screenMode == WindowMode.FitScreen)
-    {
-        targetH = windowH * 0.95;
+    let targetW, targetH;
+
+    // 计算合适的缩放比例
+    if (windowW / windowH > widthOverHeight) {
+        // 屏幕较宽，以高度为基准
+        targetH = windowH;
         targetW = targetH * widthOverHeight;
-        smoothing = true;
+    } else {
+        // 屏幕较窄，以宽度为基准
+        targetW = windowW;
+        targetH = targetW / widthOverHeight;
     }
-    else
-    if(screenMode == WindowMode.RealPixels)
-    {
-        targetW = backBuffer.width * ZOOMX;// / window.devicePixelRatio;
-        targetH = backBuffer.height * ZOOMY;// / window.devicePixelRatio;
-    }
+
+    // 应用缩放
     canvas.width = targetW;
     canvas.height = targetH;
-    canvas.style.position = "absolute";
-    canvas.style.top = "0";
-    canvas.style.bottom = "0";
-    canvas.style.left = "0";
-    canvas.style.right = "0";
-    canvas.style.margin = "auto";
-    canvas.style.imageRendering = "pixelated;crisp-edges";
+    
+    // 设置样式使其居中显示
+    canvas.style.position = "fixed";
+    canvas.style.top = "50%";
+    canvas.style.left = "50%";
+    canvas.style.transform = "translate(-50%, -50%)";
+    canvas.style.maxWidth = "100vw";
+    canvas.style.maxHeight = "100vh";
+    canvas.style.margin = "0";
+    canvas.style.imageRendering = "pixelated";
+
+    // 防止页面滚动
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
 }
 
 function onLoadPage()
@@ -344,6 +353,24 @@ function onLoadPage()
     window.onresize = fitCanvas;
 
     window.requestAnimationFrame(onInternalUpdate);
+
+    // 添加移动端相关样式
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.position = 'fixed';
+    document.documentElement.style.width = '100%';
+    document.documentElement.style.height = '100%';
+    document.documentElement.style.margin = '0';
+    document.documentElement.style.padding = '0';
+    
+    // 禁用默认的触摸行为
+    document.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+
+    // 禁用双击缩放
+    document.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+    });
 }
 
 function onInternalUpdate(now)
